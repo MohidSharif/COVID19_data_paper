@@ -1,12 +1,10 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "COVID-19 Outbreaks in Toronto"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
+  - Mohid Sharif
+thanks: "Code and data are available at: https://github.com/MohidSharif/COVID19_data_paper"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "COVID-19 has taken over the world for more than two years now. It is important to understand the measures that are being taken to explore the outbreaks throught the city. I have obtained and analyzed data from multiple COVID-19 outbreaks to compare the different variables and how they relate to eachother in different parts of the city. My findings can be used to identify circumstances in which outbreaks are less likely."
 output:
   bookdown::pdf_document2
 toc: FALSE
@@ -22,23 +20,104 @@ library(palmerpenguins)
 
 # Introduction
 
-You can and should cross-reference sections and sub-sections. For instance, Section \@ref(data). R Markdown automatically makes the sections lower case and adds a dash to spaces to generate labels, for instance, Section \@ref(first-discussion-point). 
+First paragraph is motivational and broad.
+
+Second paragraph is about what was done and what was found.
+
+This paragraph about implications.
+
+The remainder of this paper is: Section \@ref(data). R Markdown automatically makes the sections lower case and adds a dash to spaces to generate labels, for instance, Section \@ref(first-discussion-point). 
 
 
 
 # Data
 
-Our data is of penguins (Figure \@ref(fig:bills)).
+Paragraph or two introducing the dataset broadly.
 
-```{r bills, fig.cap="Bills of penguins", echo = FALSE}
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = FALSE) +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+Then show an extract of the dataset (Table \@ref(tab:dataextract)).
+
+```{r dataextract, echo= FALSE}
+library(tidyverse)
+library(knitr)
+
+covid19_outbreaks <- read.csv("~/starter_folder-main/inputs/data/covid19_outbreaks.csv")
+
+covid19_outbreaks |> 
+  filter(Neighbourhood.Name == "Agincourt North", Source.of.Infection != "No Information", Source.of.Infection != "Pending") |>
+  select(Source.of.Infection, Age.Group, Client.Gender) |>
+  slice(1:10) |> 
+  kable(
+    caption = "Outbreaks in Agincourt North",
+    col.names = c("Source of Infection", "Age Group", "Gender"),
+    digits = 1,
+    booktabs = TRUE,
+    linesep = "")
 ```
+
+
+```{r dataextract2, echo= FALSE}
+
+covid19_outbreaks |> 
+  filter(Neighbourhood.Name == "York University Heights", Source.of.Infection != "No Information", Source.of.Infection != "Pending") |>
+  select(Source.of.Infection, Age.Group, Client.Gender) |>
+  slice(1:10) |> 
+  kable(
+    caption = "Outbreaks in York University Heights",
+    col.names = c("Source of Infection", "Age Group", "Gender"),
+    digits = 1,
+    booktabs = TRUE,
+    linesep = "")
+
+
+```
+
+
+
+Figure \@ref(tab: childrengraph) shows the relationship between age and source of infection.
+
+
+```{r childrengraph, fig.cap="Source of Infections for vulnerable ages (ages 0-19 and 60+)", echo = FALSE}
+library("gridExtra")
+childrengraph <-
+  covid19_outbreaks |> 
+  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Age.Group == "19 and younger") |>
+  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
+  geom_bar(fill = "#FF6666")+
+   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
+  labs(x = "Source of Infection",
+       caption = "Youth/Children infections")
+
+elderlygraph <-
+  covid19_outbreaks |> 
+  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Age.Group == "50 to 59 Years"|| Age.Group == "60 to 69 Years"|| Age.Group == "70 to 79 Years"|| Age.Group == "80 to 89 Years"|| Age.Group == "90 and older") |>
+  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
+  geom_bar(fill = "#FF6666")+
+   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
+  labs(x = "Source of Infection",
+       caption = "Elderly infections")
+
+malegraph <-
+  covid19_outbreaks |> 
+  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Client.Gender == "MALE") |>
+  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
+  geom_bar(fill = "#FF6666")+
+   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
+  labs(x = "Source of Infection",
+       caption = "Male infections")
+
+femalegraph <-
+  covid19_outbreaks |> 
+  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Client.Gender == "FEMALE") |>
+  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
+  geom_bar(fill = "#FF6666")+
+   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
+  labs(x = "Source of Infection",
+       caption = "Female infections")
+
+grid.arrange(childrengraph, elderlygraph, ncol = 2)
+grid.arrange(malegraph, femalegraph, ncol = 2)
+```
+
 
 Talk more about it.
 
