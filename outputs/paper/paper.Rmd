@@ -1,10 +1,10 @@
 ---
-title: "COVID-19 Outbreaks in Toronto"
+title: "Reducing the Risk of COVID-19 Infections in Vulnerable ages"
 author: 
   - Mohid Sharif
 thanks: "Code and data are available at: https://github.com/MohidSharif/COVID19_data_paper"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-abstract: "COVID-19 has taken over the world for more than two years now. It is important to understand the measures that are being taken to explore the outbreaks throught the city. I have obtained and analyzed data from multiple COVID-19 outbreaks to compare the different variables and how they relate to eachother in different parts of the city. My findings can be used to identify circumstances in which outbreaks are less likely."
+abstract: "COVID-19 has taken over the world for more than two years now and it is important to study and understand in which circumstances cases rise and fall. I studied and analyzed data obtained about COVID-19 cases from various communities in Toronto specifying age, gender, and source of infection of the patient. I found that younger age groups are more likely to be infected in their household while the elderly are more likely to be infected in community settings. My findings can be used to identify circumstances in which outbreaks are less likely for certain age groups."
 output:
   bookdown::pdf_document2
 toc: FALSE
@@ -20,11 +20,11 @@ library(palmerpenguins)
 
 # Introduction
 
-First paragraph is motivational and broad.
+COVID-19 has taken over the world for more than two years now. Thousands of cases have been recorded in this data set and we can use this to our advantage. Analyzing the data set we can compare variables such as age groups and gender to isolate sources of infection which are more likely to infect certain groups and find changes to those circumstances to reduce the likeliness of infection in those groups. Using this technique we can keep making adjustments to what should and should not be allowed during the pandemic to ensure cases don't rise uncontrollably.
 
-Second paragraph is about what was done and what was found.
+I first analysed the data set to understand how cases had been recorded. Every case in the data set records the source of infection, age group, and gender of the patient. These are only a few of the variables but they are also the most important and they are the ones I mainly looked at in this data study. I then created two graphs to compare variables in the data set. The first graph is a comparison of source of infection between age groups, I used these graphs to visualize which age groups were more likely to be infected in certain settings. I found that younger ages (0-19 years) were more likely to be infected in households while elderly people are more likely to be infected in community settings or healthcare institutes. The second graph compares the source of infection between gender groups, I used these graphs to analyze which gender groups were more likely to be infected in certain settings. I found that both males and females had almost identical data for how they were being infected, however there were twice as many females being infected in healthcare institutes.
 
-This paragraph about implications.
+I can use my data to isolate situations in which infections are more likely for certain groups and how we can change that to reduce infections. Firstly younger ages are more likely to get infected in their homes, in this case they are likely infected by a family member. Family members should in this case sanitize regularly while entering and exiting the house and reduce outdoor activity to necessities. Secondly elderly are more likely to be infected in healthcare institutes because of regular visits for their health. For this healthcare institutes should do their best to isolate the non-infected elderly from the infected reducing their risk for infection. Lastly females are more likely then men to be infected in healthcare institutes due to the fact that women dominate nursing, otherwise both males and females are just as likely to be infected in any setting.
 
 The remainder of this paper is: Section \@ref(data). R Markdown automatically makes the sections lower case and adds a dash to spaces to generate labels, for instance, Section \@ref(first-discussion-point). 
 
@@ -55,68 +55,41 @@ covid19_outbreaks |>
 ```
 
 
-```{r dataextract2, echo= FALSE}
 
+(Figure \@ref(fig:agegraph)) shows the relationship between age and source of infection.
+
+
+
+```{r agegraph, fig.cap="Source of Infections by Age group", echo = FALSE}
 covid19_outbreaks |> 
-  filter(Neighbourhood.Name == "York University Heights", Source.of.Infection != "No Information", Source.of.Infection != "Pending") |>
-  select(Source.of.Infection, Age.Group, Client.Gender) |>
-  slice(1:10) |> 
-  kable(
-    caption = "Outbreaks in York University Heights",
-    col.names = c("Source of Infection", "Age Group", "Gender"),
-    digits = 1,
-    booktabs = TRUE,
-    linesep = "")
+  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending") |>
+  filter(Age.Group != "20 to 29 Years", Age.Group != "30 to 39 Years", Age.Group != "40 to 49 Years",
+        Age.Group != "50 to 59 Years", Age.Group != "60 to 69 Years") |>
+  ggplot(mapping = aes(x = Source.of.Infection, fill = Age.Group)) +
+  geom_bar()+
+   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
+  labs(x = "Source of Infection",
+       fill = "Age group")
+```
 
-
+```{r gendergraphs, fig.cap="Source of Infections by Gender", echo = FALSE}
+covid19_outbreaks |>
+  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Client.Gender != "UNKNOWN", Client.Gender != "NON-BINARY",
+          Client.Gender != "NOT LISTED, PLEASE SPECIFY", Client.Gender != "OTHER", Client.Gender != "TRANS MAN", Client.Gender != "TRANS WOMAN",
+          Client.Gender != "TRANSGENDER")|>
+  ggplot(mapping = aes(x = Source.of.Infection, fill = Client.Gender)) +
+  geom_bar(position = "dodge")+
+   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
+  labs(x = "Source of Infection",
+       fill = "Gender")
 ```
 
 
 
-Figure \@ref(tab: childrengraph) shows the relationship between age and source of infection.
 
 
-```{r childrengraph, fig.cap="Source of Infections for vulnerable ages (ages 0-19 and 60+)", echo = FALSE}
-library("gridExtra")
-childrengraph <-
-  covid19_outbreaks |> 
-  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Age.Group == "19 and younger") |>
-  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
-  geom_bar(fill = "#FF6666")+
-   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
-  labs(x = "Source of Infection",
-       caption = "Youth/Children infections")
 
-elderlygraph <-
-  covid19_outbreaks |> 
-  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Age.Group == "50 to 59 Years"|| Age.Group == "60 to 69 Years"|| Age.Group == "70 to 79 Years"|| Age.Group == "80 to 89 Years"|| Age.Group == "90 and older") |>
-  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
-  geom_bar(fill = "#FF6666")+
-   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
-  labs(x = "Source of Infection",
-       caption = "Elderly infections")
 
-malegraph <-
-  covid19_outbreaks |> 
-  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Client.Gender == "MALE") |>
-  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
-  geom_bar(fill = "#FF6666")+
-   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
-  labs(x = "Source of Infection",
-       caption = "Male infections")
-
-femalegraph <-
-  covid19_outbreaks |> 
-  filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Client.Gender == "FEMALE") |>
-  ggplot(mapping = aes(x = Source.of.Infection), stat="count") +
-  geom_bar(fill = "#FF6666")+
-   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
-  labs(x = "Source of Infection",
-       caption = "Female infections")
-
-grid.arrange(childrengraph, elderlygraph, ncol = 2)
-grid.arrange(malegraph, femalegraph, ncol = 2)
-```
 
 
 Talk more about it.
