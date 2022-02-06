@@ -1,5 +1,5 @@
 ---
-title: "Reducing the Risk of COVID-19 Infections in Vulnerable ages"
+title: "Reducing the Risk of COVID-19 for Vulnerable ages"
 author: 
   - Mohid Sharif
 thanks: "Code and data are available at: https://github.com/MohidSharif/COVID19_data_paper"
@@ -15,9 +15,11 @@ bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
+# Turn off echo for all code, disables knitting code chunks
 knitr::opts_chunk$set(echo = TRUE)
+# Turn off warning messaging in knitten paper file
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
-
+# Import needed librarys
 library(tidyverse)
 library(kableExtra)
 ```
@@ -35,7 +37,7 @@ The remainder of this paper is: Section \@ref(data).
 
 # Data
 
-I obtained my data from the City of Toronto **opendatatoronto** database portal, using the 'opendatatoronto' package [@citeopendatatoronto] and the statistical programming language **R** [@citeR]. I used the **tidyverse** package for data manipulation [@citetidyverse] and **kableExtra** for table formatting [@citekableExtra]. The header includes two lines of code **"usepackage{float}"** which allows the use of float in our R markdown and the line **"floatplacement{figure}{H}"** which keeps the tables and figures locked in the specific place where they are written in R markdown.
+I obtained my data from the City of Toronto **opendatatoronto** database portal, using the 'opendatatoronto' package [@citeopendatatoronto] and the statistical programming language **R** [@citeR]. I used the **tidyverse** package for data manipulation [@citetidyverse] and **kableExtra** for table formatting [@citekableExtra]. The header includes two lines of code **"usepackage{float}"** which allows the use of float in our R markdown and the line **"floatplacement{figure}{H}"** [@citeholdposition] which keeps the tables and figures locked in the specific place where they are written in R markdown.
 
 This data set records COVID-19 cases across Toronto and records the details of the infected. The data records the **age group, gender, neighborhood, source of infection, and if the infection was outbreak associated or sporadic**. The data classifies cases by age group rather than specific ages, age groups are grouped by 10 year age groups (E.g. "20 to 29 Years") except for the first group which is **"19 and younger"** and the last group which is **"90 and older"**. Gender is self-reported and sorted into 7 categories, from which we will look at **males** and **females**. 
 
@@ -52,14 +54,20 @@ The classifications are very self explanatory categorized as household contact, 
 
 
 ```{r dataextract, echo= FALSE}
+# Import knitr
 library(knitr)
 
+# Read the data into a variable
 covid19_outbreaks <- read.csv("~/starter_folder-main/inputs/data/covid19_outbreaks.csv")
 
+# Filter the data to be specific to Agincourt North neighborhoods and to exclude source of infections that contain "No Information" or "Pending"
 covid19_outbreaks |> 
   filter(Neighbourhood.Name == "Agincourt North", Source.of.Infection != "No Information", Source.of.Infection != "Pending") |>
+# Pipe this to include only source of infection, age group and client gender in the table
   select(Source.of.Infection, Age.Group, Client.Gender) |>
+# Include 10 listings in the table
   slice(1:10) |> 
+# Display the table with a caption and appropriate column names and format properties
   kable(
     caption = "Outbreaks in Agincourt North",
     col.names = c("Source of Infection", "Age Group", "Gender"),
@@ -80,12 +88,16 @@ From here I further cleaned the data for graphing. I cleaned the data by removin
 
 
 ```{r agegraph, fig.cap="Source of Infections by Age group", echo = FALSE}
+# Filter the data to exclude source of infections that contain "No Information" or "Pending"
 covid19_outbreaks |> 
   filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending") |>
+# Filter further to only include ages 19 and below and 70 and above
   filter(Age.Group != "20 to 29 Years", Age.Group != "30 to 39 Years", Age.Group != "40 to 49 Years",
         Age.Group != "50 to 59 Years", Age.Group != "60 to 69 Years") |>
+# Plot this graph by counting all values of source of infection for each age group
   ggplot(mapping = aes(x = Source.of.Infection, fill = Age.Group)) +
   geom_bar()+
+# Format the bar graph with a theme and appropriate axis
    theme_classic()+
    theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
   labs(x = "Source of Infection",
@@ -105,12 +117,16 @@ Now lets compare the source of infections between men and women. I used the same
 
 
 ```{r gendergraph, fig.cap="Source of Infections by Gender", echo = FALSE}
+# Filter the data to exclude source of infections that contain "No Information" or "Pending", also filter out all genders except MALE and FEMALE
 covid19_outbreaks |>
   filter(Source.of.Infection != "No Information", Source.of.Infection != "Pending", Client.Gender != "UNKNOWN", Client.Gender != "NON-BINARY",
           Client.Gender != "NOT LISTED, PLEASE SPECIFY", Client.Gender != "OTHER", Client.Gender != "TRANS MAN", Client.Gender != "TRANS WOMAN",
           Client.Gender != "TRANSGENDER")|>
+# Plot a bar graph with counts of all cases for males and females
   ggplot(mapping = aes(x = Source.of.Infection, fill = Client.Gender)) +
+# Set position of the bar to dodge so we there are multiple bars side by side
   geom_bar(position = "dodge")+
+# Set theme and format the graph with appropriate axis
    theme_classic()+
    theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
   labs(x = "Source of Infection",
